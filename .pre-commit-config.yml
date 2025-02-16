@@ -1,0 +1,56 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+# Список репозиториев и хуков для pre-commit
+repos:
+  # Репозиторий с основными хуками для общего улучшения качества кода
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      # Удаляет лишние пробелы в конце строк
+      - id: trailing-whitespace
+      # Добавляет пустую строку в конце файла, если ее нет
+      - id: end-of-file-fixer
+      # Проверяет корректность YAML-файлов
+      - id: check-yaml
+      # Предотвращает добавление слишком больших файлов в репозиторий
+      - id: check-added-large-files
+
+  # Репозиторий с хук для сортировки импортов в Python коде
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      # Сортирует импорты в Python файлах
+      - id: isort
+        name: isort (python)
+
+  # Репозиторий с хук для форматирования Python кода с использованием yapf
+  - repo: https://github.com/pre-commit/mirrors-yapf
+    rev: v0.31.0
+    hooks:
+      # Форматирует Python код с использованием yapf
+      - id: yapf
+        additional_dependencies: [toml]
+
+  # Репозиторий с хуками для статического анализа кода с использованием flake8
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.0
+    hooks:
+      # Выполняет статический анализ кода с использованием flake8
+      - id: flake8
+        additional_dependencies:
+          # Дополнительные плагины для flake8
+          - flake8-bugbear  # Проверка на распространенные ошибки
+          - flake8-builtins  # Проверка использования встроенных функций
+          - flake8-coding  # Проверка кодирования файлов
+          - flake8-import-order  # Проверка порядка импортов
+          - flake8-polyfill  # Поддержка старых версий Python
+          - flake8-quotes  # Проверка использования кавычек
+
+  # Репозиторий с хук для проверки типов с использованием mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v0.910'
+    hooks:
+      # Проверка типов с использованием mypy
+      - id: mypy
+        additional_dependencies: [types-requests, types-PyYAML, types-toml]  # Дополнительные зависимости для обработки типов

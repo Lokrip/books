@@ -1,0 +1,36 @@
+# Настройка обработки текстовых файлов
+* text=auto
+
+# Концы строк: LF для кроссплатформенной совместимости
+*.py text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+
+# Указываем, что это бинарные файлы (Git не будет пытаться сравнивать их содержимое)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.svg binary
+*.ico binary
+*.pdf binary
+*.mp4 binary
+*.mp3 binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
+# Игнорируем различия в сгенерированных файлах базы данных (миграции)
+*.sqlite3 binary
+
+# Игнорируем .lock-файлы (например, package-lock.json или Pipfile.lock)
+*.lock -diff
+
+# Исключаем файлы из архива (`git archive`)
+*.log export-ignore
+.env export-ignore
+config/settings/local.py export-ignore

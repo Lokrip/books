@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "book"
+version = "1.0.0"
+description = "Project for selling books"
+authors = ["Lokrip <165576212+Lokrip@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "^5.1.6"
+flake8 = "^7.1.1"
+pillow = "^11.1.0"
+psycopg2 = "^2.9.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,19 @@
+#это указывает что это самый верхний уровень конфигурация редактора тоесть .editorconfig лежит в самой главной деректорий
+root = true #Указывает, что это корневой файл .editorconfig, и отключает поиск других .editorconfig файлов в родительских директориях
+
+#парвила
+
+#[*]: Применяет настройки ко всем файлам
+#можно указать определенные файлы [*.html] 
+#если определнного файла мало и для двух файлов нужны одинаковые конфигураций
+#то можно использовать [*.{html,py}] 
+[*.{html,py}] 
+#тоесть для файлов html у нас кодировка будет utf-8
+charset = utf-8
+#indent_style = space и indent_size = 4: Устанавливают использование пробелов с отступом в 4 пробела.
+indent_style = space
+indent_size = 4
+#Настройка max_line_length = 119 в файле .editorconfig указывает максимальную длину строки в коде
+#Пример: some_long_variable_name = "This is a very long string that exceeds the maximum line length set by the editorconfig file."
+max_line_length = 119
+
