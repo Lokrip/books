@@ -14,9 +14,13 @@ class Book(models.Model):
         blank=True,
         null=True
     )
+    author_name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.name;
+        return "Id %s: %s" % (
+            self.id, 
+            self.name
+        )
     
     class Meta:
         verbose_name = "Book"
