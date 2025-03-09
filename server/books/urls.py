@@ -5,7 +5,8 @@ from . import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/v1/", include("store.urls"))
+    path("api/v1/", include("store.urls")),
+    path('', include('social_django.urls', namespace='social'))
 ]
 
 if settings.DEBUG:

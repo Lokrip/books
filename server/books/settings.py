@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     
     "rest_framework",
     "django_filters",
+    "social_django",
     
     "store",
 ]
@@ -48,7 +49,7 @@ ROOT_URLCONF = 'books.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,3 +122,16 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_GITHUB_KEY = 'Ov23cthq0b1oMBOqfXRd'
+SOCIAL_AUTH_GITHUB_SECRET = '438da0f7db436d6691ace6308ab939de54f818f8'
+
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
