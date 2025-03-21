@@ -15,7 +15,7 @@ class BooksApiTestCase(APITestCase):
         self.user = User.objects.create(username="test_username")
         # Django автоматически создает базу данных с таблицей Book,
         # затем добавляет туда данные, а по окончании теста удаляет базу данных с таблицами.
-        self.book1 = Book.objects.create(name="Test book 1", price=25, author_name="Author 1")
+        self.book1 = Book.objects.create(owner=self.user, name="Test book 1", price=25, author_name="Author 1")
         self.book2 = Book.objects.create(name="Test book 2", price=55, author_name="Author 5")
         self.book3 = Book.objects.create(name="Test book Author 1", price=55, author_name="Author 2")
         
@@ -47,8 +47,9 @@ class BooksApiTestCase(APITestCase):
         response = self.client.post(url, data=json_data, content_type="application/json")
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(4, Book.objects.all().count())
+        self.assertEqual(self.user, Book.objects.last().owner)
     
-    def test_create(self):
+    def test_update(self):
         url = reverse("book-detail", args=(self.book1.id,))
         data = {
             "name": self.book1.name,
@@ -83,3 +84,4 @@ class BooksApiTestCase(APITestCase):
         serializer = BooksSerializer([self.book1, self.book3], many=True)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)
+        

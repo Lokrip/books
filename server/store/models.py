@@ -1,6 +1,8 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Book(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=255, verbose_name="Book Name")
     price = models.DecimalField(
         decimal_places=2, 
