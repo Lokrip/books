@@ -3,6 +3,7 @@ import json
 from django.urls import reverse
 from django.contrib.auth.models import User
 
+from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APITestCase
 from rest_framework import status
 
@@ -84,4 +85,44 @@ class BooksApiTestCase(APITestCase):
         serializer = BooksSerializer([self.book1, self.book3], many=True)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)
+    
+    
+    #Негативный тест
+    def test_update_not_owner(self):
+        self.user2 = User.objects.create(username="test_username2")
+        url = reverse("book-detail", args=(self.book1.id,))
+        data = {
+            "name": self.book1.name,
+            "price": 575,
+            "author_name": self.book1.author_name
+        }
+        json_data = json.dumps(data)
+        #аутенфицируем пользователя в системе когда делаем запрос на сервер
+        self.client.force_login(self.user2)
+        response = self.client.put(url, data=json_data, content_type="application/json")
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+        #после обновления делаем refresh текущей книги тоесть записи и она становиться обновленной иза запроса put
+        self.book1.refresh_from_db()
+        self.assertEqual({'detail': ErrorDetail(
+            string='You do not have permission to perform this action.', 
+            code='permission_denied'
+        )}, response.data)
+        self.assertEqual(25, self.book1.price)
         
+    def test_update_not_owner_but_staff(self):
+        self.user2 = User.objects.create(username="test_username2",
+                                         is_staff=True)
+        url = reverse("book-detail", args=(self.book1.id,))
+        data = {
+            "name": self.book1.name,
+            "price": 575,
+            "author_name": self.book1.author_name
+        }
+        json_data = json.dumps(data)
+        #аутенфицируем пользователя в системе когда делаем запрос на сервер
+        self.client.force_login(self.user2)
+        response = self.client.put(url, data=json_data, content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        #после обновления делаем refresh текущей книги тоесть записи и она становиться обновленной иза запроса put
+        self.book1.refresh_from_db()
+        self.assertEqual(575, self.book1.price)

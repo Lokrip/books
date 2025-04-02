@@ -27,3 +27,18 @@ class Book(models.Model):
     class Meta:
         verbose_name = "Book"
         verbose_name_plural = "Books"
+
+class UserBookRelation(models.Model):
+    RATE_CHOICES = (
+        (1, "Ok")
+        (2, "Fine")
+        (3, "Good")
+        (4, "Amazing")
+        (5, "Incredible")
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    like = models.BooleanField(default=False)
+    in_bookmarks = models.BooleanField(default=False)
+    rate = models.PositiveSmallIntegerField(choices=RATE_CHOICES)

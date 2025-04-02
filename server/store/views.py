@@ -9,7 +9,7 @@ from rest_framework.filters import (
     OrderingFilter
 )
 
-from store.permissions import IsOwnerOrReadOnly
+from store.permissions import IsOwnerOrStaffOrReadOnly
 
 from store.models import Book
 from store.serializer import BooksSerializer
@@ -25,7 +25,7 @@ class BookViewSet(ModelViewSet):
     search_fields = ['name', 'author_name']
     # поля каторые будут сортироваться
     ordering_fields = ['price', 'author_name']
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsOwnerOrStaffOrReadOnly]
     
     def perform_create(self, serializer):
         #validated_data это те данные каторый приходят после успешной валидаций
