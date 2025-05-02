@@ -1,4 +1,10 @@
 from django.shortcuts import render
+from django.db.models import (
+    Count, 
+    Case, 
+    When, 
+    Avg
+)
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -27,7 +33,16 @@ from store.serializer import (
 
 
 class BookViewSet(ModelViewSet):
-    queryset = Book.objects.all()
+    queryset = Book.objects.all().annotate(annotated_likes=Count(
+                #SELECT book.*, COUNT(CASE WHEN user_book_relation.like = TRUE THEN 1 ELSE NULL END) AS annotated_likes
+                #мы делаем такой запрос
+                Case(When(user_book_relation__like=True, then=1))), rating=Avg("user_book_relation__rate")
+                                           ).select_related("owner").only(
+                                                "id", "name", "price", 
+                                                "author_name", "owner__username", "image").prefetch_related("readers").order_by("pk")
+    #select_related он делает join внутри запроса если мы указили поля в модели ForeignKey и он это делает для одной записи
+    #prefetch_related он делает дополнительнный запрос с фильтром in он уже используеться если к книге много связонных данных как ManyToMany или например к пользователю связонны продукты через Foreign key и их тоже можно оптимизировать
+    #но не кто нам не мешает использовать prefetch_related для полей просто ForeignKey например user он будет тоже делать дополнительнный запрос с in
     serializer_class = BooksSerializer
     #тут мы указываем класс фильтра
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
@@ -38,7 +53,7 @@ class BookViewSet(ModelViewSet):
     # поля каторые будут сортироваться
     ordering_fields = ['price', 'author_name']
     permission_classes = [IsOwnerOrStaffOrReadOnly]
-
+    
     def perform_create(self, serializer):
         #validated_data это те данные каторый приходят после успешной валидаций
         serializer.validated_data['owner'] = self.request.user

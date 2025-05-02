@@ -2,6 +2,9 @@ import json
 
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.db.models import Count, Case, When, Avg
 
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APITestCase
@@ -21,6 +24,9 @@ class BooksApiTestCase(APITestCase):
         self.book2 = Book.objects.create(name="Test book 2", price=55, author_name="Author 5")
         self.book3 = Book.objects.create(name="Test book Author 1", price=55, author_name="Author 2")
 
+        UserBookRelation.objects.create(user=self.user, book=self.book1, like=True,
+                                        rate=5)
+        
     def test_get(self):
         # # Django автоматически создает базу данных с таблицей Book,
         # # затем добавляет туда данные, а по окончании теста удаляет базу данных с таблицами.
@@ -30,11 +36,30 @@ class BooksApiTestCase(APITestCase):
         #через reverse мы берем name="book-list" тоесть имя маршрута
         #например path("api/books", book_list, name="book-list") берем name
         url = reverse("book-list")
-        response = self.client.get(url)
-
-        serializer = BooksSerializer([self.book1, self.book2, self.book3], many=True)
+        
+        
+        # мы говрим что после этого запроса self.client.get(url) 
+        # у нас должно быть 2 sql запроса
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(url)
+            self.assertEqual(2, len(queries))
+            
+        books = Book.objects.all().annotate(annotated_likes=Count(
+                #SELECT book.*, COUNT(CASE WHEN user_book_relation.like = TRUE THEN 1 ELSE NULL END) AS annotated_likes
+                #мы делаем такой запрос
+                Case(When(user_book_relation__like=True, then=1))), rating=Avg("user_book_relation__rate")).order_by("pk")
+        serializer = BooksSerializer(books, many=True)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)
+
+        for i in range(len(serializer.data)):
+            if serializer.data[i]['name'] == "Test book 1":
+                self.assertEqual(serializer.data[i]['rating'], "5.00")
+                self.assertEqual(serializer.data[i]['annotated_likes'], 1)
+            else:
+                self.assertEqual(serializer.data[i]['rating'], None)
+                self.assertEqual(serializer.data[i]['annotated_likes'], 0)
+                
 
     def test_create(self):
         self.assertEqual(3, Book.objects.all().count())
@@ -83,8 +108,11 @@ class BooksApiTestCase(APITestCase):
         #например path("api/books", book_list, name="book-list") берем name
         url = reverse("book-list")
         response = self.client.get(url, data={"search": "Author 1"})
-        
-        serializer = BooksSerializer([self.book1, self.book3], many=True)
+        books = Book.objects.filter(id__in=[self.book1.pk, self.book3.pk]).annotate(annotated_likes=Count(
+                #SELECT book.*, COUNT(CASE WHEN user_book_relation.like = TRUE THEN 1 ELSE NULL END) AS annotated_likes
+                #мы делаем такой запрос
+                Case(When(user_book_relation__like=True, then=1))), rating=Avg("user_book_relation__rate")).order_by('pk')
+        serializer = BooksSerializer(books, many=True)
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer.data, response.data)
 
@@ -173,6 +201,4 @@ class BooksRelationTestCase(APITestCase):
         self.client.force_login(self.user)
         response = self.client.patch(url, data=json_data, content_type="application/json")
         #трейтий аргумент assertEqual это какой сделать принт если эта штука не сошлась не совпала
-        self.assertEqual(status.HTTP_200_OK, response.status_code, response.data)
-        relation = UserBookRelation.objects.get(user=self.user, book=self.book1)
-        self.assertEqual(3, relation.rate)
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code, response.data)
